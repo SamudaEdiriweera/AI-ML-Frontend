@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState} from 'react';
+// Import the new service function
+import { callApi } from '@/services/apiService';
 
 // Interface for the prediction result remains the same
 interface PredictionResult {
@@ -30,7 +32,8 @@ const FinTrustAI = () => {
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+// --- ADD THIS LINE FOR DEBUGGING ---
+// console.log("Value from .env.local:", process.env.NEXT_PUBLIC_API_FINTRUSTAI_URL);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // Convert numeric fields from string input
@@ -46,17 +49,14 @@ const FinTrustAI = () => {
     setResult(null);
 
     try {
-      const response = await fetch('http://localhost:8000/predict', {
+      // THIS IS THE KEY CHANGE:
+      // Call the generic service with the specific project name.
+
+      const data = await callApi('finTrustAI', {
+        endpoint: '/predict',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data: PredictionResult = await response.json();
       setResult(data);
 
     } catch (err) {
